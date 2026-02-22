@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Webcam Hue Slider</title>
+	</head>
+	<body>
+		<video id="webcam" autoplay playsinline></video>
+
+		<canvas id="canvas"></canvas>
+		<canvas id="drawCanvas"></canvas>
+
+		<div>
+			<label for="hue">Hue:</label>
+			<input type="range" id="hue" min="0" max="360" value="100">
+			<span id="hue-value">100°</span>
+		</div>
+
+		<button id="party-mode">Party Mode: OFF</button>
+		<br>
+		<span>index finger</span><input type="color" id="index_finger_tip"><input type="checkbox" id="index_finger_slider"><br>
+		<span>middle finger</span><input type="color" id="middle_finger_tip"><input type="checkbox" id="middle_finger_slider"><br>
+		<span>ring finger</span><input type="color" id="ring_finger_tip"><input type="checkbox" id="ring_finger_slider"><br>
+		<span>pinky finger</span><input type="color" id="pinky_finger_tip"><input type="checkbox" id="pinky_finger_slider"><br>
+		<span>thumb</span><input type="color" id="thumb_tip"><input type="checkbox" id="thumb_slider"><br>
+		<button id="clear">Clear</button>
+
+		<script src="https://unpkg.com/ml5@1/dist/ml5.min.js"></script>
+		<script type="module">
+			document.addEventListener("DOMContentLoaded", () => {
+				const video = document.getElementById("webcam")
+				const hueSlider = document.getElementById("hue")
+				const hueValue = document.getElementById("hue-value")
+				const partyButton = document.getElementById("party-mode")
+				const canvas = document.getElementById("canvas")
+				const drawCanvas = document.getElementById("drawCanvas")
+
+				const index_finger_tip = document.getElementById("index_finger_tip")
+				const index_finger_slider = document.getElementById("index_finger_slider")
+				const middle_finger_tip = document.getElementById("middle_finger_tip")
+				const middle_finger_slider = document.getElementById("middle_finger_slider")
+				const ring_finger_tip = document.getElementById("ring_finger_tip")
+				const ring_finger_slider = document.getElementById("ring_finger_slider")
+				const pinky_finger_tip = document.getElementById("pinky_finger_tip")
+				const pinky_finger_slider = document.getElementById("pinky_finger_slider")
+				const thumb_tip = document.getElementById("thumb_tip")
+				const thumb_slider = document.getElementById("thumb_slider")
+
+				const clearButton = document.getElementById("clear")
+
+				const ctx = canvas.getContext("2d")
+				const drawCtx = drawCanvas.getContext("2d")
+
+				let partyMode = false;
+				let partyInterval = null;
+
+				clearButton.addEventListener("click", () => {
+					ctx.clearRect(0, 0, canvas.width, canvas.height)
+					drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height)
+				})
+
+				const handState = [
+					{ gesture: null, since: 0, locked: false },
+					{ gesture: null, since: 0, locked: false }
+				]
+
+				const GESTURE_HOLD_TIME = 1000 // ms
+
+				const HAND_CONNECTIONS = [
+					["wrist", "thumb_cmc"],
+					["thumb_cmc", "thumb_mcp"],
+					["thumb_mcp", "thumb_ip"],
+					["thumb_ip", "thumb_tip"],
+
+					["wrist", "index_finger_mcp"],
+					["index_finger_mcp", "index_finger_pip"],
+					["index_finger_pip", "index_finger_dip"],
+					["index_finger_dip", "index_finger_tip"],
+
+					["wrist", "middle_finger_mcp"],
+					["middle_finger_mcp", "middle_finger_pip"],
+					["middle_finger_pip", "middle_finger_dip"],
+					["middle_finger_dip", "middle_finger_tip"],
+
+					["wrist", "ring_finger_mcp"],
+					["ring_finger_mcp", "ring_finger_pip"],
+					["ring_finger_pip", "ring_finger_dip"],
+					["ring_finger_dip", "ring_finger_tip"],
+
+					["wrist", "pinky_finger_mcp"],
+					["pinky_finger_mcp", "pinky_finger_pip"],
+					["pinky_finger_pip", "pinky_finger_dip"],
+					["pinky_finger_dip", "pinky_finger_tip"]
+				]
+
+				function gotHands(hands, error) {
+					//console.log(hands, error)
+
+					ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+					for (const hand of hands) {
+						// draw points
+						for (const keypoint of hand.keypoints) {
+							ctx.beginPath()
+							ctx.arc(keypoint.x, keypoint.y, 5, 0, 2 * Math.PI)
+							ctx.fill()
+						}
+
+						// draw skeleton lines
+						for (const [startName, endName] of HAND_CONNECTIONS) {
+							const start = hand.keypoints.find(keypoint => keypoint.name === startName)
+							const end = hand.keypoints.find(keypoint => keypoint.name === endName)
+							if (!start || !end) continue
+
+							ctx.beginPath()
+							ctx.moveTo(start.x, start.y)
+							ctx.lineTo(end.x, end.y)
+							ctx.strokeStyle = "lime"
+							ctx.lineWidth = 2
+							ctx.stroke()
+						}
+					}
+
+
+					for (const hand of hands) {
+						for (const keypoint of hand.keypoints) {
+							if (keypoint.name === "index_finger_tip" && index_finger_slider.checked) {
+								drawCtx.beginPath();
+								drawCtx.arc(keypoint.x, keypoint.y, 5, 0, 2 * Math.PI);
+								drawCtx.fillStyle = index_finger_tip.value;
+								drawCtx.fill();
+							}
+
+							if (keypoint.name === "middle_finger_tip" && middle_finger_slider.checked) {
+								drawCtx.beginPath();
+								drawCtx.arc(keypoint.x, keypoint.y, 5, 0, 2 * Math.PI);
+								drawCtx.fillStyle = middle_finger_tip.value;
+								drawCtx.fill();
+							}
+
+							if (keypoint.name === "ring_finger_tip" && ring_finger_slider.checked) {
+								drawCtx.beginPath();
+								drawCtx.arc(keypoint.x, keypoint.y, 5, 0, 2 * Math.PI);
+								drawCtx.fillStyle = ring_finger_tip.value;
+								drawCtx.fill();
+							}
+
+							if (keypoint.name === "pinky_finger_tip" && pinky_finger_slider.checked) {
+								drawCtx.beginPath();
+								drawCtx.arc(keypoint.x, keypoint.y, 5, 0, 2 * Math.PI);
+								drawCtx.fillStyle = pinky_finger_tip.value;
+								drawCtx.fill();
+							}
+
+							if (keypoint.name === "thumb_tip" && thumb_slider.checked) {
+								drawCtx.beginPath();
+								drawCtx.arc(keypoint.x, keypoint.y, 5, 0, 2 * Math.PI);
+								drawCtx.fillStyle = thumb_tip.value;
+								drawCtx.fill();
+							}
+						}
+					}
+					hands.slice(0, 2).forEach((hand, index) => {
+						const gesture = detectGestureForHand(hand)
+						updateHandGesture(index, gesture)
+					})
+
+					determineWinner()
+				}
+
+
+				function isFingerExtended(hand, fingertipName, referenceJointName) {
+					const wrist = hand.keypoints.find(point => point.name === "wrist")
+					const fingertip = hand.keypoints.find(point => point.name === fingertipName)
+					const referenceJoint = hand.keypoints.find(point => point.name === referenceJointName)
+
+					if (!wrist || !fingertip || !referenceJoint) {
+						return false
+					}
+
+					const tipDistance = distance(wrist, fingertip)
+					const jointDistance = distance(wrist, referenceJoint)
+
+					return tipDistance > jointDistance
+				}
+
+				function distance(a, b) {
+					const dx = a.x - b.x
+					const dy = a.y - b.y
+					return Math.hypot(dx, dy)
+				}
+
+				function updateHandGesture(handIndex, detectedGesture) {
+					const state = handState[handIndex]
+					const now = performance.now()
+
+					if (detectedGesture === "unknown") {
+						state.gesture = null
+						state.since = 0
+						state.locked = false
+						return
+					}
+
+					if (state.gesture !== detectedGesture) {
+						state.gesture = detectedGesture
+						state.since = now
+						state.locked = false
+						return
+					}
+
+					if (!state.locked && now - state.since >= GESTURE_HOLD_TIME) {
+						state.locked = true
+						console.log(`Hand ${handIndex + 1} locked: ${detectedGesture}`)
+					}
+				}
+
+				function detectGestureForHand(hand) {
+					const indexUp = isFingerExtended(hand, "index_finger_tip", "index_finger_pip")
+					const middleUp = isFingerExtended(hand, "middle_finger_tip", "middle_finger_pip")
+					const ringUp = isFingerExtended(hand, "ring_finger_tip", "ring_finger_pip")
+					const pinkyUp = isFingerExtended(hand, "pinky_finger_tip", "pinky_finger_pip")
+
+					const fingersUp = [indexUp, middleUp, ringUp, pinkyUp]
+					const count = fingersUp.filter(Boolean).length
+
+					if (count === 0) return "rock"
+					if (count === 2 && indexUp && middleUp) return "scissors"
+					if (count === 4) return "paper"
+
+					return "unknown"
+				}
+
+				function determineWinner() {
+					const [h1, h2] = handState
+					if (!h1.locked || !h2.locked) return
+
+					const g1 = h1.gesture
+					const g2 = h2.gesture
+
+					if (g1 === g2) {
+						console.log("Draw")
+						return
+					}
+
+					const wins =
+						(g1 === "rock" && g2 === "scissors") ||
+						(g1 === "scissors" && g2 === "paper") ||
+						(g1 === "paper" && g2 === "rock")
+
+					if (wins) {
+						console.log("Hand 1 won")
+					} else {
+						console.log("Hand 2 won")
+					}
+
+					// reset after decision
+					for (const h of handState) {
+						h.gesture = null
+						h.since = 0
+						h.locked = false
+					}
+				}
+
+				async function setup() {
+					video.srcObject = await navigator.mediaDevices.getUserMedia({
+						audio: false,
+						video: {
+							width: 1280,
+							height: 720
+						}
+					});
+
+					const handPose = await ml5.handPose({
+						runtime: "mediapipe"
+					});
+
+
+					video.onloadedmetadata = () => {
+						canvas.width = video.videoWidth
+						canvas.height = video.videoHeight
+						drawCanvas.width = video.videoWidth
+						drawCanvas.height = video.videoHeight
+						video.play()
+					}
+
+					handPose.detectStart(video, gotHands);
+				}
+
+				function applyHue(hue) {
+					video.style.filter = `sepia(100%) hue-rotate(${hue}deg)`
+					hueValue.textContent = hue + "°"
+				}
+
+				hueSlider.addEventListener("input", () => {
+					if (partyMode) return
+					applyHue(hueSlider.value)
+				});
+
+				partyButton.addEventListener("click", () => {
+					partyMode = !partyMode
+					partyButton.textContent = "Party Mode: " + (partyMode ? "ON" : "OFF")
+
+					if (partyMode) {
+						partyInterval = setInterval(() => {
+							const hue = Math.floor(Math.random() * 360)
+							hueSlider.value = hue
+							applyHue(hue)
+						}, 350)
+					} else {
+						clearInterval(partyInterval)
+						partyInterval = null
+					}
+				});
+
+				// initial state
+				applyHue(100)
+				setup()
+			})
+		</script>
+
+		<style>
+			body {
+				background: #111;
+				color: #eee;
+				font-family: system-ui, sans-serif;
+				padding: 1rem;
+			}
+
+			video {
+				width: 100%;
+				max-width: 720px;
+				border-radius: 8px;
+				display: block;
+				margin-bottom: 1rem;
+			}
+
+			canvas {
+				position: absolute;
+				top: 18px;
+				left: 18px;
+				width: 100%;
+				max-width: 720px;
+				height: 405px;
+				z-index: 1;
+			}
+
+			input[type="range"] {
+				width: 100%;
+				max-width: 680px;
+			}
+
+			button {
+				padding: 0.5rem 1rem;
+				font-size: 1rem;
+				cursor: pointer;
+			}
+		</style>
+	</body>
+</html>
