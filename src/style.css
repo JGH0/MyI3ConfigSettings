@@ -1,0 +1,38 @@
+h1 {
+	margin: 5px;
+	font-size: 20px;
+}
+
+#settingsList, #settingsWindow {
+	float:left; display:inline;
+}
+
+#settingsList {
+	height: calc(100vh - 50px);
+	overflow-y: scroll;
+	width: 200px;
+}
+
+#settingsWindow {
+	height: calc(100vh - 50px);
+	width: calc(99% - 200px);
+	border: #000000 1px solid;
+}
+
+ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 5px 0 5px 5px;
+	&.active {
+		background-color: #d7d7d7;
+		color: #000000;
+		font-weight: 600;
+	}
+}
+
+ul:hover {
+	cursor: pointer;
+	background-color: #d7d7d7;
+	color: #000000;
+	font-weight: 600;
+}

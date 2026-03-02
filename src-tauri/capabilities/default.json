@@ -5,6 +5,24 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
-    "opener:default"
+    "opener:default",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "fs:allow-home-read",
+    "fs:allow-home-write",
+    "fs:allow-applocaldata-read",
+    "fs:allow-applocaldata-write",
+    {
+      "identifier": "fs:allow-read-dir",
+      "allow": [{ "path": "$HOME/.config/MyI3Config/**" }]
+    },
+    {
+      "identifier": "fs:allow-read-text-file",
+      "allow": [{ "path": "$HOME/.config/MyI3Config/**" }]
+    },
+    {
+      "identifier": "fs:allow-write-text-file",
+      "allow": [{ "path": "$HOME/.config/MyI3Config/**" }]
+    }
   ]
 }

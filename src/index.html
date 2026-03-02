@@ -1,16 +1,21 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="styles.css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tauri App</title>
-    <script type="module" src="/main.js" defer></script>
-  </head>
-
-  <body>
-    <h1>Tauri test</h1>
-	<pre id="out">loading…</pre>
-	<a href="camera.html">Tauri</a>
-  </body>
+	<head>
+		<meta charset="UTF-8">
+		<title>i3/sway Config Manager</title>
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+		<h1>i3/sway Settings Manager</h1>
+		<div id="settingsList">
+			<ul data-page="keybindings">keybindings</ul>
+			<ul data-page="themes">themes</ul>
+			<ul data-page="workspaces">workspaces</ul>
+			<ul data-page="autostart">autostart</ul>
+		</div>
+		<div id="settingsWindow">
+			<p>Click on a category to load its settings.</p>
+		</div>
+		<script src="index.js"></script>
+	</body>
 </html>
