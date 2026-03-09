@@ -6,7 +6,15 @@
 		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
-		<h1>i3/sway Settings Manager</h1>
+		<div class="header">
+			<h1>i3/sway Settings Manager</h1>
+			<button id="reloadBtn" class="reload-btn" title="Reload i3/sway">
+				<svg viewBox="0 0 24 24">
+					<path d="M17.65 6.35A8 8 0 1 0 19 12h-2a6 6 0 1 1-2.23-4.69l2.64-2.64 1.42 1.42-3.54 3.54-3.54-3.54 1.41-1.41L16.44 5.3c.38.32.74.68 1.06 1.06z"/>
+				</svg>
+			</button>
+		</div>
+
 		<div id="settingsList">
 			<ul data-page="keybindings">keybindings</ul>
 			<ul data-page="themes">themes</ul>
@@ -16,6 +24,7 @@
 		<div id="settingsWindow">
 			<p>Click on a category to load its settings.</p>
 		</div>
+
 		<script src="index.js"></script>
 	</body>
 </html>

@@ -3,8 +3,41 @@ h1 {
 	font-size: 20px;
 }
 
+/* Header container */
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 5px 10px;
+	border-bottom: 1px solid #ccc;
+}
+
+/* Reload button */
+.reload-btn {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 4px 8px;
+	border-radius: 4px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.reload-btn svg {
+	width: 24px;
+	height: 24px;
+	fill: currentColor;
+}
+
+.reload-btn:hover {
+	background-color: #e0e0e0;
+}
+
+/* Keep existing layout for lists */
 #settingsList, #settingsWindow {
-	float:left; display:inline;
+	float: left;
+	display: inline;
 }
 
 #settingsList {
@@ -23,11 +56,12 @@ ul {
 	list-style-type: none;
 	margin: 0;
 	padding: 5px 0 5px 5px;
-	&.active {
-		background-color: #d7d7d7;
-		color: #000000;
-		font-weight: 600;
-	}
+}
+
+ul.active {
+	background-color: #d7d7d7;
+	color: #000000;
+	font-weight: 600;
 }
 
 ul:hover {

@@ -8,20 +8,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	async function loadPage(category) {
 		try {
-			// Fetch the HTML file (e.g., settings/keybindings/keybindings.html)
 			const htmlPath = `./settings/${category}/${category}.html`;
 			const response = await fetch(htmlPath);
 			if (!response.ok) throw new Error(`Failed to load ${htmlPath}`);
 			const html = await response.text();
 
-			// Insert the HTML into the content area
 			contentArea.innerHTML = html;
 
-			// Dynamically import the corresponding JS module
 			const modulePath = `./settings/${category}/${category}.js`;
 			const pageModule = await import(modulePath);
 
-			// Call the module's init function, passing the contentArea if needed
 			if (pageModule.init && typeof pageModule.init === 'function') {
 				pageModule.init(contentArea);
 			} else {
@@ -38,11 +34,45 @@ document.addEventListener('DOMContentLoaded', () => {
 			categoryItems.forEach(i => i.classList.remove('active'));
 			item.classList.add('active');
 
-			const category = item.dataset.page; // e.g., "keybindings"
+			const category = item.dataset.page;
 			if (category) loadPage(category);
 		});
 	});
 
-	// Optionally load a default page
-	// loadPage('keybindings');
+	// Reload button functionality – tries both i3-msg and swaymsg
+	const reloadBtn = document.getElementById('reloadBtn');
+	if (reloadBtn) {
+		reloadBtn.addEventListener('click', async () => {
+			try {
+				const { Command } = window.__TAURI__.shell;
+				let success = false;
+				const commands = ['i3-msg', 'swaymsg'];
+
+				for (const cmd of commands) {
+					try {
+						const command = Command.create(cmd, ['reload']);
+						const output = await command.execute();
+						if (output.code === 0) {
+							console.log(`Reload succeeded with ${cmd}`);
+							success = true;
+							break;
+						}
+					} catch (e) {
+						// Command not found or other error – try the next one
+						console.log(`${cmd} failed:`, e);
+					}
+				}
+
+				if (!success) {
+					alert('Could not reload i3/sway. Make sure either i3 or sway is installed and the commands are in your PATH.');
+				} else {
+					// Optional: show a brief success message (you could use a status element)
+					console.log('Reload triggered successfully.');
+				}
+			} catch (error) {
+				console.error('Reload failed:', error);
+				alert('Could not reload i3/sway.\nMake sure the shell plugin is enabled and you have the necessary permissions.');
+			}
+		});
+	}
 });

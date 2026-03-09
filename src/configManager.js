@@ -1,134 +1,85 @@
 /**
  * @module configManager
- * @description Provides functions to manage i3/sway config scripts located in `~/.config/MyI3Config/settings/`.
- * Uses Tauri's file system plugin. Assumes the necessary permissions are granted in the capability file.
+ * Provides reusable functions for managing i3/sway configuration and keybindings.
  */
 
-// Ensure Tauri global object is available
 if (!window.__TAURI__) {
 	throw new Error('Tauri global object not found. Make sure this module is loaded inside a Tauri window.');
 }
 
 const { fs } = window.__TAURI__;
-const { readDir, readTextFile, writeTextFile, remove, BaseDirectory } = fs;
+const { readTextFile, writeTextFile, BaseDirectory } = fs;
+
+const HOME = BaseDirectory.Home;
+const CONFIG_DIR = '.config/MyI3Config/';
+const JSON_PATH = CONFIG_DIR + 'keybindings.json';
+const KEYBINDS_CONF = CONFIG_DIR + 'keybindings.conf';
+const MAIN_CONFIG_PATH = CONFIG_DIR + 'config';
 
 /**
- * Base directory for all operations – the user's home directory.
- * @type {BaseDirectory.Home}
+ * Reads the keybindings JSON file.
+ * @returns {Promise<Array>} Array of binding objects { keyCombo, command }.
  */
-const BASE_DIR = BaseDirectory.Home;
-
-/**
- * Relative path to the settings folder inside the user's home.
- * @type {string}
- */
-const SETTINGS_PATH = '.config/MyI3Config/settings/';
-
-/**
- * Validates a filename to prevent path traversal attacks.
- * Only allows alphanumeric characters, dashes, underscores, and the `.sh` extension.
- * @param {string} filename - The filename to validate.
- * @throws {Error} If the filename is invalid.
- */
-function validateFilename(filename) {
-	if (typeof filename !== 'string') {
-		throw new Error('Filename must be a string.');
-	}
-	// Only allow safe characters: letters, numbers, dash, underscore, and must end with .sh
-	const safePattern = /^[a-zA-Z0-9_-]+\.sh$/;
-	if (!safePattern.test(filename)) {
-		throw new Error(`Invalid filename: "${filename}". Only alphanumeric, dash, underscore and .sh extension are allowed.`);
-	}
-}
-
-/**
- * Builds the full relative path for a given filename inside the settings directory.
- * @param {string} filename - The filename (e.g., "terminal.sh").
- * @returns {string} The full relative path (e.g., ".config/MyI3Config/settings/terminal.sh").
- */
-function buildPath(filename) {
-	return SETTINGS_PATH + filename;
-}
-
-/**
- * Lists all `.sh` files in the settings directory.
- * @returns {Promise<string[]>} A promise that resolves to an array of filenames.
- * @throws Will throw an error if the directory cannot be read.
- */
-export async function listScripts() {
+export async function readKeybindings() {
 	try {
-		const entries = await readDir(SETTINGS_PATH, { baseDir: BASE_DIR });
-		// Filter for files with .sh extension (ignore directories)
-		const scriptFiles = entries
-			.filter(entry => entry.name && entry.name.endsWith('.sh') && !entry.children)
-			.map(entry => entry.name);
-		return scriptFiles;
-	} catch (error) {
-		throw new Error(`Failed to list scripts: ${error}`);
+		const content = await readTextFile(JSON_PATH, { baseDir: HOME });
+		return JSON.parse(content).filter(b => b.keyCombo && b.command);
+	} catch (err) {
+		if (err.toString().includes('No such file or directory')) {
+			return [];
+		}
+		throw err;
 	}
 }
 
 /**
- * Reads the content of a script file.
- * @param {string} filename - The name of the script file (e.g., "terminal.sh").
- * @returns {Promise<string>} A promise that resolves to the file content.
- * @throws Will throw an error if the filename is invalid, the file cannot be read, or does not exist.
+ * Writes keybindings to the JSON file.
+ * @param {Array} bindings - Array of binding objects.
  */
-export async function readScript(filename) {
-	validateFilename(filename);
+export async function writeKeybindings(bindings) {
+	await writeTextFile(JSON_PATH, JSON.stringify(bindings, null, 2), { baseDir: HOME });
+}
+
+/**
+ * Generates the bindsym lines for the configuration snippet.
+ * @param {Array} bindings - Array of binding objects.
+ * @returns {string[]} Array of lines like "bindsym $mod+Return exec firefox".
+ */
+export function generateConfLines(bindings) {
+	return bindings.map(b => `bindsym ${b.keyCombo} exec ${b.command}`);
+}
+
+/**
+ * Writes the keybindings.conf snippet file.
+ * @param {string[]} lines - Array of bindsym lines.
+ */
+export async function writeConfFile(lines) {
+	await writeTextFile(KEYBINDS_CONF, lines.join('\n'), { baseDir: HOME });
+}
+
+/**
+ * Ensures the main config includes the snippet file.
+ * Adds an 'include' line if missing (after the # Applications section or at the end).
+ */
+export async function ensureIncludeLine() {
+	let configContent = '';
 	try {
-		const path = buildPath(filename);
-		const content = await readTextFile(path, { baseDir: BASE_DIR });
-		return content;
-	} catch (error) {
-		throw new Error(`Failed to read script "${filename}": ${error}`);
+		configContent = await readTextFile(MAIN_CONFIG_PATH, { baseDir: HOME });
+	} catch (err) {
+		if (!err.toString().includes('No such file or directory')) throw err;
+		configContent = '# i3/sway config\n';
 	}
-}
+	const lines = configContent.split('\n');
+	const includeLine = 'include ~/.config/MyI3Config/keybindings.conf';
+	const hasInclude = lines.some(line => line.includes('keybindings.conf'));
 
-/**
- * Writes content to a script file. If the file does not exist, it will be created.
- * @param {string} filename - The name of the script file.
- * @param {string} content - The content to write.
- * @returns {Promise<void>}
- * @throws Will throw an error if the filename is invalid or the write operation fails.
- */
-export async function writeScript(filename, content) {
-	validateFilename(filename);
-	if (typeof content !== 'string') {
-		throw new Error('Content must be a string.');
+	if (!hasInclude) {
+		const appsIndex = lines.findIndex(line => line.includes('# Applications'));
+		if (appsIndex !== -1) {
+			lines.splice(appsIndex + 1, 0, '', includeLine);
+		} else {
+			lines.push('', includeLine);
+		}
+		await writeTextFile(MAIN_CONFIG_PATH, lines.join('\n'), { baseDir: HOME });
 	}
-	try {
-		const path = buildPath(filename);
-		await writeTextFile(path, content, { baseDir: BASE_DIR });
-	} catch (error) {
-		throw new Error(`Failed to write script "${filename}": ${error}`);
-	}
-}
-
-/**
- * Deletes a script file.
- * @param {string} filename - The name of the script file.
- * @returns {Promise<void>}
- * @throws Will throw an error if the filename is invalid, the file does not exist, or deletion fails.
- */
-export async function deleteScript(filename) {
-	validateFilename(filename);
-	try {
-		const path = buildPath(filename);
-		await remove(path, { baseDir: BASE_DIR });
-	} catch (error) {
-		throw new Error(`Failed to delete script "${filename}": ${error}`);
-	}
-}
-
-/**
- * Creates a new script file with the given content. If the file already exists, it will be overwritten.
- * This is essentially an alias for `writeScript`.
- * @param {string} filename - The name of the script file.
- * @param {string} content - The initial content.
- * @returns {Promise<void>}
- * @throws Will throw an error if the filename is invalid or the write operation fails.
- */
-export async function createScript(filename, content) {
-	return writeScript(filename, content);
 }

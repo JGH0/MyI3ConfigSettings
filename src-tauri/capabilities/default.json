@@ -24,6 +24,23 @@
     {
       "identifier": "fs:allow-write-text-file",
       "allow": [{ "path": "$HOME/.config/MyI3Config/**" }]
+    },
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "i3-msg",
+          "cmd": "i3-msg",
+          "args": true,
+          "sidecar": false
+        },
+        {
+          "name": "swaymsg",
+          "cmd": "swaymsg",
+          "args": true,
+          "sidecar": false
+        }
+      ]
     }
   ]
 }
