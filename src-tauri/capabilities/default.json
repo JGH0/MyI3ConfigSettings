@@ -8,6 +8,7 @@
     "opener:default",
     "dialog:allow-open",
     "dialog:allow-save",
+    "dialog:allow-confirm",
     "fs:allow-home-read",
     "fs:allow-home-write",
     "fs:allow-applocaldata-read",
