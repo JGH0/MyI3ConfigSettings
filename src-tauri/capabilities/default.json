@@ -26,6 +26,10 @@
       "allow": [{ "path": "$HOME/.config/MyI3Config/**" }]
     },
     {
+      "identifier": "fs:allow-mkdir",
+      "allow": [{ "path": "$HOME/.config/MyI3Config/**" }]
+    },
+    {
       "identifier": "shell:allow-execute",
       "allow": [
         {

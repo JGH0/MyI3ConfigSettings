@@ -1,1 +1,92 @@
-<h1>theme</h1>
+<h2>Themes</h2>
+<p>Customise the look and feel of i3/sway.</p>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    <!-- Left column: general settings -->
+    <div>
+        <h3>General</h3>
+        <div class="form-group">
+            <label>Font (Pango):</label>
+            <input type="text" id="font" placeholder="e.g. JetBrains Mono 10" style="width:100%;" />
+        </div>
+        <div class="form-group">
+            <label>Inner gaps (px):</label>
+            <input type="number" id="gaps-inner" min="0" max="50" value="0" style="width:80px;" />
+        </div>
+        <div class="form-group">
+            <label>Outer gaps (px):</label>
+            <input type="number" id="gaps-outer" min="0" max="50" value="0" style="width:80px;" />
+        </div>
+        <div class="form-group">
+            <label>Border width (px):</label>
+            <input type="number" id="border-width" min="0" max="10" value="2" style="width:80px;" />
+        </div>
+    </div>
+
+    <!-- Right column: colors -->
+    <div>
+        <h3>Window Colors</h3>
+        <div class="form-group">
+            <label>Focused border:</label>
+            <input type="color" id="focused-border" value="#4c7899" />
+        </div>
+        <div class="form-group">
+            <label>Focused background:</label>
+            <input type="color" id="focused-bg" value="#285577" />
+        </div>
+        <div class="form-group">
+            <label>Focused text:</label>
+            <input type="color" id="focused-text" value="#ffffff" />
+        </div>
+        <div class="form-group">
+            <label>Focused indicator:</label>
+            <input type="color" id="focused-indicator" value="#2e9ef4" />
+        </div>
+        <div class="form-group">
+            <label>Unfocused border:</label>
+            <input type="color" id="unfocused-border" value="#333333" />
+        </div>
+        <div class="form-group">
+            <label>Unfocused background:</label>
+            <input type="color" id="unfocused-bg" value="#222222" />
+        </div>
+        <div class="form-group">
+            <label>Unfocused text:</label>
+            <input type="color" id="unfocused-text" value="#888888" />
+        </div>
+        <div class="form-group">
+            <label>Urgent border:</label>
+            <input type="color" id="urgent-border" value="#2f343a" />
+        </div>
+        <div class="form-group">
+            <label>Urgent background:</label>
+            <input type="color" id="urgent-bg" value="#900000" />
+        </div>
+        <div class="form-group">
+            <label>Urgent text:</label>
+            <input type="color" id="urgent-text" value="#ffffff" />
+        </div>
+    </div>
+</div>
+
+<!-- Background and lock -->
+<div style="margin-top: 2rem;">
+    <h3>Background & Lock</h3>
+    <div class="form-group">
+        <label>Wallpaper image path:</label>
+        <input type="text" id="wallpaper" placeholder="/home/user/wallpaper.jpg" style="width:70%;" />
+        <button id="select-wallpaper">Browse</button>
+    </div>
+    <div class="form-group">
+        <label>Lock screen image (optional):</label>
+        <input type="text" id="lock-image" placeholder="/home/user/lock.png" style="width:70%;" />
+        <button id="select-lock">Browse</button>
+    </div>
+    <small>If lock image is set, the lock script will use it. Leave empty for default.</small>
+</div>
+
+<div style="margin-top: 2rem;">
+    <button id="save-btn">💾 Save Theme</button>
+    <button id="reset-btn">↺ Reset to Defaults</button>
+    <div id="status" class="status"></div>
+</div>
