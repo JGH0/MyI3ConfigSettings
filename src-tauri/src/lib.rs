@@ -6,7 +6,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
 	.plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![set_executable])
+        .invoke_handler(tauri::generate_handler![set_executable, list_fonts])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -20,4 +20,12 @@ fn set_executable(path: String) -> Result<(), String> {
     permissions.set_mode(0o755); // rwxr-xr-x
     fs::set_permissions(&path, permissions).map_err(|e| e.to_string())?;
     Ok(())
+}
+
+#[tauri::command]
+fn list_fonts() -> Result<Vec<String>, String> {
+    use font_kit::source::SystemSource;
+    let source = SystemSource::new();
+    let families = source.all_families().map_err(|e| e.to_string())?;
+    Ok(families)
 }

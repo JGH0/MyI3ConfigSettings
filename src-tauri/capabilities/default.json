@@ -43,7 +43,12 @@
           "cmd": "swaymsg",
           "args": true,
           "sidecar": false
-        }
+        },
+	{ "name": "sh",
+	  "cmd": "sh",
+	  "args": true,
+	  "sidecar": false
+	}
       ]
     }
   ]

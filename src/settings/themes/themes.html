@@ -7,7 +7,10 @@
         <h3>General</h3>
         <div class="form-group">
             <label>Font (Pango):</label>
-            <input type="text" id="font" placeholder="e.g. JetBrains Mono 10" style="width:100%;" />
+            <input type="text" id="font" list="font-suggestions" placeholder="e.g. JetBrains Mono 10" style="width:100%;" />
+            <datalist id="font-suggestions"></datalist>
+            <div style="margin-top: 4px; font-size: 14px;" id="font-preview">AaBbCc 123</div>
+            <small>Type to search, then add size (e.g., " 10")</small>
         </div>
         <div class="form-group">
             <label>Inner gaps (px):</label>
@@ -69,11 +72,46 @@
     </div>
 </div>
 
+<!-- Visuals section -->
+<div style="margin-top: 2rem;">
+    <h3>Visuals</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label>Default border style:</label>
+            <select id="border-style">
+                <option value="normal">normal</option>
+                <option value="pixel" selected>pixel</option>
+                <option value="none">none</option>
+            </select>
+            <input type="number" id="border-pixel-width" min="0" max="10" value="1" style="width:60px; margin-left: 0.5rem;" />
+            <small>Pixel width (only for pixel style)</small>
+        </div>
+        <div class="form-group">
+            <label>Floating modifier:</label>
+            <input type="text" id="floating-modifier" value="$mod" placeholder="e.g. $mod, $mod+Shift" style="width:200px;" />
+        </div>
+        <div class="form-group">
+            <label>Focus follows mouse:</label>
+            <select id="focus-follows-mouse">
+                <option value="yes">yes</option>
+                <option value="no">no</option>
+            </select>
+        </div>
+    </div>
+</div>
+
 <!-- Background and lock -->
 <div style="margin-top: 2rem;">
     <h3>Background & Lock</h3>
     <div class="form-group">
-        <label>Wallpaper image path:</label>
+        <label>Wallpaper type:</label>
+        <select id="wallpaper-type">
+            <option value="static">Static image</option>
+            <option value="animated">Animated (GIF) – requires external tools</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Wallpaper path:</label>
         <input type="text" id="wallpaper" placeholder="/home/user/wallpaper.jpg" style="width:70%;" />
         <button id="select-wallpaper">Browse</button>
     </div>
@@ -83,6 +121,7 @@
         <button id="select-lock">Browse</button>
     </div>
     <small>If lock image is set, the lock script will use it. Leave empty for default.</small>
+    <div id="wallpaper-warning" style="color: #f38ba8; margin-top: 0.5rem;"></div>
 </div>
 
 <div style="margin-top: 2rem;">
