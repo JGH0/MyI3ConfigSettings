@@ -13,17 +13,28 @@ const INPUT_CONF = CONFIG_DIR + 'input.conf';
 const LAYOUT_SCRIPT = CONFIG_DIR + 'scripts/cycle-layout.sh';
 const HOME = BaseDirectory.Home;
 
-// Default values
+// Default values (expanded with all mouse settings and additional keyboard)
 const DEFAULT_SETTINGS = {
 	keyboard: {
 		repeatRate: 30,
-		repeatDelay: 300
+		repeatDelay: 300,
+		xkbModel: 'pc105',
+		xkbOptions: '',
+		xkbNumlock: false
 	},
 	mouse: {
 		accelProfile: 'adaptive',
 		accelSpeed: 0.0,
 		naturalScroll: false,
-		tapToClick: false
+		tapToClick: false,
+		leftHanded: false,
+		dwt: false,
+		scrollMethod: 'two_finger',
+		scrollButton: 274,
+		tapButtonMap: 'lrm',
+		dragLock: false,
+		middleEmulation: false,
+		clickMethod: 'none'
 	},
 	layouts: [
 		{ layout: 'us', variant: '' },
@@ -39,6 +50,13 @@ let layoutListDiv, layoutKeysListDiv;
 // DOM elements for keyboard/mouse
 let repeatRateInput, repeatDelayInput, accelProfileSelect, accelSpeedInput,
 	naturalScrollCheck, tapToClickCheck;
+
+// New keyboard elements
+let xkbModelInput, xkbOptionsInput, xkbNumlockCheck;
+
+// Advanced mouse elements
+let leftHandedCheck, dwtCheck, scrollMethodSelect, scrollButtonInput, scrollButtonGroup,
+	tapButtonMapSelect, dragLockCheck, middleEmulationCheck, clickMethodSelect;
 
 // Key recording state
 let activeRecordInput = null;
@@ -83,6 +101,13 @@ async function loadSettings() {
 			currentSettings = { ...DEFAULT_SETTINGS, ...saved };
 			if (saved.layouts) currentSettings.layouts = saved.layouts;
 			if (saved.layoutKeys) currentSettings.layoutKeys = saved.layoutKeys;
+			// Merge mouse and keyboard settings deeply
+			if (saved.keyboard) {
+				currentSettings.keyboard = { ...DEFAULT_SETTINGS.keyboard, ...saved.keyboard };
+			}
+			if (saved.mouse) {
+				currentSettings.mouse = { ...DEFAULT_SETTINGS.mouse, ...saved.mouse };
+			}
 		} else {
 			currentSettings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 		}
@@ -96,10 +121,25 @@ async function loadSettings() {
 function updateUI() {
 	repeatRateInput.value = currentSettings.keyboard.repeatRate;
 	repeatDelayInput.value = currentSettings.keyboard.repeatDelay;
+	xkbModelInput.value = currentSettings.keyboard.xkbModel;
+	xkbOptionsInput.value = currentSettings.keyboard.xkbOptions;
+	xkbNumlockCheck.checked = currentSettings.keyboard.xkbNumlock;
+
 	accelProfileSelect.value = currentSettings.mouse.accelProfile;
 	accelSpeedInput.value = currentSettings.mouse.accelSpeed;
 	naturalScrollCheck.checked = currentSettings.mouse.naturalScroll;
 	tapToClickCheck.checked = currentSettings.mouse.tapToClick;
+
+	// Advanced mouse
+	leftHandedCheck.checked = currentSettings.mouse.leftHanded;
+	dwtCheck.checked = currentSettings.mouse.dwt;
+	scrollMethodSelect.value = currentSettings.mouse.scrollMethod;
+	scrollButtonInput.value = currentSettings.mouse.scrollButton;
+	tapButtonMapSelect.value = currentSettings.mouse.tapButtonMap;
+	dragLockCheck.checked = currentSettings.mouse.dragLock;
+	middleEmulationCheck.checked = currentSettings.mouse.middleEmulation;
+	clickMethodSelect.value = currentSettings.mouse.clickMethod;
+	updateScrollButtonVisibility();
 
 	renderLayoutList();
 	renderLayoutKeysList();
@@ -276,13 +316,24 @@ function gatherSettings() {
 	return {
 		keyboard: {
 			repeatRate: parseInt(repeatRateInput.value, 10) || 30,
-			repeatDelay: parseInt(repeatDelayInput.value, 10) || 300
+			repeatDelay: parseInt(repeatDelayInput.value, 10) || 300,
+			xkbModel: xkbModelInput.value.trim(),
+			xkbOptions: xkbOptionsInput.value.trim(),
+			xkbNumlock: xkbNumlockCheck.checked
 		},
 		mouse: {
 			accelProfile: accelProfileSelect.value,
 			accelSpeed: parseFloat(accelSpeedInput.value) || 0,
 			naturalScroll: naturalScrollCheck.checked,
-			tapToClick: tapToClickCheck.checked
+			tapToClick: tapToClickCheck.checked,
+			leftHanded: leftHandedCheck.checked,
+			dwt: dwtCheck.checked,
+			scrollMethod: scrollMethodSelect.value,
+			scrollButton: parseInt(scrollButtonInput.value, 10) || 274,
+			tapButtonMap: tapButtonMapSelect.value,
+			dragLock: dragLockCheck.checked,
+			middleEmulation: middleEmulationCheck.checked,
+			clickMethod: clickMethodSelect.value
 		},
 		layouts: currentSettings.layouts,
 		layoutKeys: currentSettings.layoutKeys.filter(k => k && k.trim() !== '')
@@ -303,6 +354,15 @@ async function saveSettings() {
 		confLines.push('input type:keyboard {');
 		confLines.push(`	repeat_rate ${newSettings.keyboard.repeatRate}`);
 		confLines.push(`	repeat_delay ${newSettings.keyboard.repeatDelay}`);
+		if (newSettings.keyboard.xkbModel) {
+			confLines.push(`	xkb_model ${newSettings.keyboard.xkbModel}`);
+		}
+		if (newSettings.keyboard.xkbOptions) {
+			confLines.push(`	xkb_options ${newSettings.keyboard.xkbOptions}`);
+		}
+		if (newSettings.keyboard.xkbNumlock) {
+			confLines.push(`	xkb_numlock enabled`);
+		}
 		if (newSettings.layouts.length > 0) {
 			const layouts = newSettings.layouts.map(l => l.layout).join(',');
 			const variants = newSettings.layouts.map(l => l.variant || '').join(',');
@@ -316,6 +376,16 @@ async function saveSettings() {
 		confLines.push(`	pointer_accel ${newSettings.mouse.accelSpeed}`);
 		confLines.push(`	natural_scroll ${newSettings.mouse.naturalScroll ? 'enabled' : 'disabled'}`);
 		confLines.push(`	tap ${newSettings.mouse.tapToClick ? 'enabled' : 'disabled'}`);
+		confLines.push(`	left_handed ${newSettings.mouse.leftHanded ? 'enabled' : 'disabled'}`);
+		confLines.push(`	dwt ${newSettings.mouse.dwt ? 'enabled' : 'disabled'}`);
+		confLines.push(`	scroll_method ${newSettings.mouse.scrollMethod}`);
+		if (newSettings.mouse.scrollMethod === 'on_button_down') {
+			confLines.push(`	scroll_button ${newSettings.mouse.scrollButton}`);
+		}
+		confLines.push(`	tap_button_map ${newSettings.mouse.tapButtonMap}`);
+		confLines.push(`	drag_lock ${newSettings.mouse.dragLock ? 'enabled' : 'disabled'}`);
+		confLines.push(`	middle_emulation ${newSettings.mouse.middleEmulation ? 'enabled' : 'disabled'}`);
+		confLines.push(`	click_method ${newSettings.mouse.clickMethod}`);
 		confLines.push('}');
 
 		await writeTextFile(INPUT_CONF, confLines.join('\n'), { baseDir: HOME });
@@ -448,8 +518,34 @@ export async function init(containerElement) {
 	accelSpeedInput = document.getElementById('accel-speed');
 	naturalScrollCheck = document.getElementById('natural-scroll');
 	tapToClickCheck = document.getElementById('tap-to-click');
+
+	// New keyboard elements
+	xkbModelInput = document.getElementById('xkb-model');
+	xkbOptionsInput = document.getElementById('xkb-options');
+	xkbNumlockCheck = document.getElementById('xkb-numlock');
+
+	// Advanced mouse elements
+	leftHandedCheck = document.getElementById('left-handed');
+	dwtCheck = document.getElementById('dwt');
+	scrollMethodSelect = document.getElementById('scroll-method');
+	scrollButtonInput = document.getElementById('scroll-button');
+	scrollButtonGroup = document.getElementById('scroll-button-group');
+	tapButtonMapSelect = document.getElementById('tap-button-map');
+	dragLockCheck = document.getElementById('drag-lock');
+	middleEmulationCheck = document.getElementById('middle-emulation');
+	clickMethodSelect = document.getElementById('click-method');
+
 	layoutListDiv = document.getElementById('layout-list');
 	layoutKeysListDiv = document.getElementById('layout-keys-list');
+
+	// Show/hide scroll button based on scroll method
+	function updateScrollButtonVisibility() {
+		if (scrollButtonGroup) {
+			scrollButtonGroup.style.display = scrollMethodSelect.value === 'on_button_down' ? 'block' : 'none';
+		}
+	}
+	scrollMethodSelect.addEventListener('change', updateScrollButtonVisibility);
+	updateScrollButtonVisibility();
 
 	document.getElementById('add-layout').addEventListener('click', () => {
 		currentSettings.layouts.push({ layout: '', variant: '' });

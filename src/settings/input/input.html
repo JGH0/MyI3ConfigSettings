@@ -14,7 +14,6 @@
 			<input type="number" id="repeat-delay" min="100" max="1000" value="300" style="width:80px;" />
 		</div>
 	</div>
-
 	<!-- Right column: Mouse/Touchpad -->
 	<div>
 		<h3>Mouse/Touchpad</h3>
@@ -36,7 +35,67 @@
 			<label><input type="checkbox" id="tap-to-click" /> Tap-to-click</label>
 		</div>
 	</div>
+	<!-- advanced Keyboard -->
+	<div>
+		<h4 style="margin: 0;">Advanced</h4>
+		<div class="form-group">
+			<label>XKB model (e.g., pc105):</label>
+			<input type="text" id="xkb-model" placeholder="pc105" value="pc105" style="width:150px;" />
+		</div>
+		<div class="form-group">
+			<label>XKB options (comma-separated):</label>
+			<input type="text" id="xkb-options" placeholder="ctrl:nocaps, compose:menu" value="" style="width:200px;" />
+		</div>
+		<div class="form-group">
+			<label><input type="checkbox" id="xkb-numlock" /> Enable numlock on startup</label>
+		</div>
+	</div>
 
+	<!-- Advanced Mouse/Touchpad Settings -->
+	<div>
+		<h4 style="margin: 0;">Advanced</h4>
+		<div class="form-group">
+			<label><input type="checkbox" id="left-handed" /> Left-handed mode</label>
+		</div>
+		<div class="form-group">
+			<label><input type="checkbox" id="dwt" /> Disable while typing (touchpad)</label>
+		</div>
+		<div class="form-group">
+			<label>Scroll method:</label>
+			<select id="scroll-method">
+				<option value="two_finger">Two finger</option>
+				<option value="edge">Edge</option>
+				<option value="on_button_down">On button down</option>
+				<option value="none">None</option>
+			</select>
+		</div>
+		<div class="form-group" id="scroll-button-group" style="display: none;">
+			<label>Scroll button (number):</label>
+			<input type="number" id="scroll-button" min="1" max="32" value="274" style="width:60px;" />
+			<small>e.g., 274 for side button</small>
+		</div>
+		<div class="form-group">
+			<label>Tap button map:</label>
+			<select id="tap-button-map">
+				<option value="lrm">lrm (left, right, middle)</option>
+				<option value="lmr">lmr (left, middle, right)</option>
+			</select>
+		</div>
+		<div class="form-group">
+			<label><input type="checkbox" id="drag-lock" /> Drag lock</label>
+		</div>
+		<div class="form-group">
+			<label><input type="checkbox" id="middle-emulation" /> Middle button emulation</label>
+		</div>
+		<div class="form-group">
+			<label>Click method:</label>
+			<select id="click-method">
+				<option value="none">None</option>
+				<option value="button_areas">Button areas</option>
+				<option value="clickfinger">Clickfinger</option>
+			</select>
+		</div>
+	</div>
 
 	<!-- Keyboard Layouts -->
 	<div style="margin-top: 2rem;">
@@ -58,15 +117,15 @@
 		<button id="add-layout-key">➕ Add Key</button>
 	</div>
 </div>
+<!-- Typewriter iframe (from user) -->
 <iframe src="settings/input/typewriter.html" frameborder="0" id="typewriter"></iframe>
 <style>
-	#typewriter {
-		width: calc(100vw - 225px);
-		height: 300px;
-		overflow: hidden;
-	}
+  #typewriter {
+	width: calc(100vw - 225px);
+	height: 300px;
+	overflow: hidden;
+  }
 </style>
-
 
 <div style="margin-top: 2rem;">
 	<button id="save-btn">💾 Save Input Settings</button>
