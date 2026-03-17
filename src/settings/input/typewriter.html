@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Mini Typing test</title>
+		<style>
+			body {
+				font-family: monospace;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: start;
+				min-height: 100vh;
+				background: #ffffff;
+				color: #555;
+				padding: 2rem;
+			}
+
+			#text {
+				font-size: 2rem;
+				max-width: 800px;
+				line-height: 2.5rem;
+				user-select: none;
+				word-break: break-word;
+			}
+
+			#text .correct {
+				color: #222; /* dark for correct */
+			}
+
+			#text .incorrect {
+				color: #d32f2f; /* red for wrong */
+			}
+
+			#text .current {
+				text-decoration: underline;
+				color: #000; /* current letter darker */
+			}
+
+			#text .upcoming {
+				color: #bbb; /* gray for upcoming */
+			}
+
+			#stats {
+				margin-top: 2rem;
+				font-size: 1.2rem;
+				color: #333;
+			}
+
+			input {
+				opacity: 0;
+				position: absolute;
+			}
+		</style>
+	</head>
+	<body style="margin:0; overflow:hidden;">
+
+		<h1>Mini Typing test</h1>
+		<div id="text"></div>
+		<div id="stats">
+			WPM: <span id="wpm">0</span> | Errors: <span id="errors">0</span>
+		</div>
+		<input type="text" id="hiddenInput" autofocus>
+
+		<script>
+			const textElement = document.getElementById('text');
+			const wpmElement = document.getElementById('wpm');
+			const errorsElement = document.getElementById('errors');
+			const input = document.getElementById('hiddenInput');
+
+			let currentIndex = 0;
+			let typedStatus = [];
+			let errors = 0;
+			let startTime = null;
+			let finished = false;
+
+			// Result overlay
+			const resultDiv = document.createElement('div');
+			resultDiv.style.position = 'fixed';
+			resultDiv.style.top = '0';
+			resultDiv.style.left = '0';
+			resultDiv.style.width = '100%';
+			resultDiv.style.height = '100%';
+			resultDiv.style.background = 'rgba(255,255,255,0.95)';
+			resultDiv.style.display = 'flex';
+			resultDiv.style.flexDirection = 'column';
+			resultDiv.style.alignItems = 'center';
+			resultDiv.style.justifyContent = 'center';
+			resultDiv.style.fontSize = '2rem';
+			resultDiv.style.color = '#222';
+			resultDiv.style.zIndex = '999';
+			resultDiv.style.display = 'none';
+			document.body.appendChild(resultDiv);
+
+			const words = [
+				"unzip", "strip", "touch", "finger", "grep", "mount", "fsck", "more", "yes", "unmount", "sleep", "head"
+			];
+
+			function getRandomWordSequence(count = 20) {
+				let sequence = [];
+				for (let i = 0; i < count; i++) {
+					const word = words[Math.floor(Math.random() * words.length)];
+					sequence.push(word);
+				}
+				return sequence.join(' ') + ' ';
+			}
+
+			let sampleText = getRandomWordSequence();
+
+			function renderText() {
+				textElement.innerHTML = '';
+				for (let i = 0; i < sampleText.length; i++) {
+					const span = document.createElement('span');
+					span.textContent = sampleText[i];
+
+					if (i < currentIndex) {
+						if (typedStatus[i] === 'correct') span.classList.add('correct');
+						else if (typedStatus[i] === 'incorrect') span.classList.add('incorrect');
+					} else if (i === currentIndex) {
+						span.classList.add('current');
+					} else {
+						span.classList.add('upcoming');
+					}
+
+					textElement.appendChild(span);
+				}
+			}
+
+			function calculateWPM() {
+				if (!startTime) return 0;
+				const minutes = (Date.now() - startTime) / 1000 / 60;
+				const correctChars = typedStatus.filter(s => s === 'correct').length;
+				return Math.round((correctChars / 5) / minutes);
+			}
+
+			function finishTest() {
+				finished = true;
+				const timeTaken = (Date.now() - startTime) / 1000;
+				const correctChars = typedStatus.filter(s => s === 'correct').length;
+				const accuracy = Math.round((correctChars / sampleText.length) * 100);
+
+				resultDiv.innerHTML = `
+					<div>Finished!</div>
+					<div>WPM: ${calculateWPM()}</div>
+					<div>Errors: ${errors}</div>
+					<div>Accuracy: ${accuracy}%</div>
+					<br>
+					<div style="font-size:1rem; opacity:0.7;">Press Enter or Click to restart</div>
+				`;
+
+				resultDiv.style.display = 'flex';
+			}
+
+			function restartTest() {
+				currentIndex = 0;
+				typedStatus = [];
+				errors = 0;
+				startTime = null;
+				finished = false;
+				sampleText = getRandomWordSequence();
+
+				errorsElement.textContent = 0;
+				wpmElement.textContent = 0;
+
+				resultDiv.style.display = 'none';
+				renderText();
+			}
+
+			input.addEventListener('input', (e) => {
+				if (finished) return;
+
+				if (!startTime) startTime = Date.now();
+
+				const char = e.data;
+				if (char === null) return;
+
+				const currentChar = sampleText[currentIndex];
+
+				if (char === currentChar) {
+					typedStatus[currentIndex] = 'correct';
+				} else {
+					typedStatus[currentIndex] = 'incorrect';
+					errors++;
+				}
+
+				currentIndex++;
+
+				if (currentIndex >= sampleText.length) {
+					finishTest();
+				}
+
+				errorsElement.textContent = errors;
+				wpmElement.textContent = calculateWPM();
+				renderText();
+				input.value = '';
+			});
+
+			input.addEventListener('keydown', (e) => {
+				if (finished && e.key === 'Enter') {
+					restartTest();
+					return;
+				}
+
+				if (e.key === 'Backspace' && !finished) {
+					if (currentIndex > 0) {
+						currentIndex--;
+						if (typedStatus[currentIndex] === 'incorrect') errors--;
+						typedStatus[currentIndex] = undefined;
+						errorsElement.textContent = errors;
+						renderText();
+					}
+					e.preventDefault();
+				}
+			});
+
+			document.body.addEventListener('click', () => {
+				if (finished) {
+					restartTest();
+				}
+				input.focus();
+			});
+
+			renderText();
+		</script>
+	</body>
+</html>

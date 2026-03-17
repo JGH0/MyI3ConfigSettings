@@ -36,27 +36,37 @@
 			<label><input type="checkbox" id="tap-to-click" /> Tap-to-click</label>
 		</div>
 	</div>
-</div>
 
-<!-- Keyboard Layouts -->
-<div style="margin-top: 2rem;">
-	<h3>Keyboard Layouts</h3>
-	<p>Add layouts and variants (comma-separated for multiple). A keybinding will cycle through them.</p>
-	<div id="layout-list">
-		<!-- Layout entries will be added here via JS -->
-	</div>
-	<button id="add-layout">➕ Add Layout</button>
-</div>
 
-<!-- Layout Cycle Keybindings -->
-<div style="margin-top: 2rem;">
-	<h3>Layout Cycle Keybindings</h3>
-	<p>Add one or more key combinations to cycle through the layouts above.</p>
-	<div id="layout-keys-list">
-		<!-- Key combo entries will be added here via JS -->
+	<!-- Keyboard Layouts -->
+	<div style="margin-top: 2rem;">
+		<h3>Keyboard Layouts</h3>
+		<p>Add layouts and variants (comma-separated for multiple).</p>
+		<div id="layout-list">
+			<!-- Layout entries will be added here via JS -->
+		</div>
+		<button id="add-layout">➕ Add Layout</button>
 	</div>
-	<button id="add-layout-key">➕ Add Key</button>
+
+	<!-- Layout Cycle Keybindings -->
+	<div style="margin-top: 2rem;">
+		<h3>Layout Cycle Keybindings</h3>
+		<p>Add one or more key combinations to cycle through the layouts.</p>
+		<div id="layout-keys-list">
+			<!-- Key combo entries will be added here via JS -->
+		</div>
+		<button id="add-layout-key">➕ Add Key</button>
+	</div>
 </div>
+<iframe src="settings/input/typewriter.html" frameborder="0" id="typewriter"></iframe>
+<style>
+	#typewriter {
+		width: calc(100vw - 225px);
+		height: 300px;
+		overflow: hidden;
+	}
+</style>
+
 
 <div style="margin-top: 2rem;">
 	<button id="save-btn">💾 Save Input Settings</button>
