@@ -1,0 +1,64 @@
+<h2>Input Devices</h2>
+<p>Configure keyboard, mouse, and layout settings.</p>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+	<!-- Left column: Keyboard -->
+	<div>
+		<h3>Keyboard</h3>
+		<div class="form-group">
+			<label>Repeat rate (characters/sec):</label>
+			<input type="number" id="repeat-rate" min="1" max="100" value="30" style="width:80px;" />
+		</div>
+		<div class="form-group">
+			<label>Repeat delay (ms):</label>
+			<input type="number" id="repeat-delay" min="100" max="1000" value="300" style="width:80px;" />
+		</div>
+	</div>
+
+	<!-- Right column: Mouse/Touchpad -->
+	<div>
+		<h3>Mouse/Touchpad</h3>
+		<div class="form-group">
+			<label>Acceleration profile:</label>
+			<select id="accel-profile">
+				<option value="adaptive">adaptive</option>
+				<option value="flat">flat</option>
+			</select>
+		</div>
+		<div class="form-group">
+			<label>Acceleration speed:</label>
+			<input type="number" id="accel-speed" min="-1" max="1" step="0.1" value="0" style="width:80px;" />
+		</div>
+		<div class="form-group">
+			<label><input type="checkbox" id="natural-scroll" /> Natural scrolling</label>
+		</div>
+		<div class="form-group">
+			<label><input type="checkbox" id="tap-to-click" /> Tap-to-click</label>
+		</div>
+	</div>
+</div>
+
+<!-- Keyboard Layouts -->
+<div style="margin-top: 2rem;">
+	<h3>Keyboard Layouts</h3>
+	<p>Add layouts and variants (comma-separated for multiple). A keybinding will cycle through them.</p>
+	<div id="layout-list">
+		<!-- Layout entries will be added here via JS -->
+	</div>
+	<button id="add-layout">➕ Add Layout</button>
+</div>
+
+<!-- Layout Cycle Keybindings -->
+<div style="margin-top: 2rem;">
+	<h3>Layout Cycle Keybindings</h3>
+	<p>Add one or more key combinations to cycle through the layouts above.</p>
+	<div id="layout-keys-list">
+		<!-- Key combo entries will be added here via JS -->
+	</div>
+	<button id="add-layout-key">➕ Add Key</button>
+</div>
+
+<div style="margin-top: 2rem;">
+	<button id="save-btn">💾 Save Input Settings</button>
+	<div id="status" class="status"></div>
+</div>

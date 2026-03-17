@@ -41,13 +41,13 @@ h1 {
 }
 
 #settingsList {
-	height: calc(100vh - 50px);
+	height: calc(100vh - 60px);
 	overflow-y: scroll;
 	width: 200px;
 }
 
 #settingsWindow {
-	height: calc(100vh - 50px);
+	height: calc(100vh - 60px);
 	width: calc(99% - 200px);
 	border: #000000 1px solid;
 }

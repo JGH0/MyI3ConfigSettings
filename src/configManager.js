@@ -83,3 +83,31 @@ export async function ensureIncludeLine() {
 		await writeTextFile(MAIN_CONFIG_PATH, lines.join('\n'), { baseDir: HOME });
 	}
 }
+
+export async function generateKeybindingsConf() {
+	const { readTextFile, writeTextFile, BaseDirectory } = window.__TAURI__.fs;
+	const HOME = BaseDirectory.Home;
+	const KEYBINDINGS_JSON = '.config/MyI3Config/keybindings.json';
+	const KEYBINDS_CONF = '.config/MyI3Config/keybindings.conf';
+	try {
+		const content = await readTextFile(KEYBINDINGS_JSON, { baseDir: HOME });
+		const bindings = JSON.parse(content);
+		const confLines = bindings.map(b => {
+			if (b.type === 'app') {
+				return `bindsym ${b.keyCombo} exec ${b.command}`;
+			} else if (b.type === 'window') {
+				return `bindsym ${b.keyCombo} ${b.action}`;
+			} else if (b.type === 'workspace') {
+				return `bindsym ${b.keyCombo} workspace ${b.workspaceNum === 0 ? 10 : b.workspaceNum}`;
+			} else if (b.type === 'move-to-workspace') {
+				return `bindsym ${b.keyCombo} move container to workspace ${b.workspaceNum === 0 ? 10 : b.workspaceNum}`;
+			} else if (b.type === 'resize') {
+				return `bindsym ${b.keyCombo} resize ${b.resizeDir} ${b.resizeAmount} ${b.resizeUnit}`;
+			}
+			return '';
+		}).filter(line => line);
+		await writeTextFile(KEYBINDS_CONF, confLines.join('\n'), { baseDir: HOME });
+	} catch (err) {
+		console.error('Failed to generate keybindings.conf:', err);
+	}
+}
