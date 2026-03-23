@@ -28,7 +28,7 @@ const DEFAULT_THEME = {
     borderPixelWidth: 1,
     floatingModifier: '$mod',
     focusFollowsMouse: 'yes',
-    wallpaperType: 'static',   // new: 'static' or 'animated'
+    wallpaperType: 'static',
     wallpaper: '',
     lockImage: ''
 };

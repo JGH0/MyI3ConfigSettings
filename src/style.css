@@ -3,7 +3,6 @@ h1 {
 	font-size: 20px;
 }
 
-/* Header container */
 .header {
 	display: flex;
 	justify-content: space-between;
@@ -12,7 +11,6 @@ h1 {
 	border-bottom: 1px solid #ccc;
 }
 
-/* Reload button */
 .reload-btn {
 	background: none;
 	border: none;
@@ -34,7 +32,6 @@ h1 {
 	background-color: #e0e0e0;
 }
 
-/* Keep existing layout for lists */
 #settingsList, #settingsWindow {
 	float: left;
 	display: inline;

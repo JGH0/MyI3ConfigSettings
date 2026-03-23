@@ -35,7 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
 			item.classList.add('active');
 
 			const category = item.dataset.page;
-			if (category) loadPage(category);
+			if (category){
+				loadPage(category);
+			}
 		});
 	});
 
@@ -66,7 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
 				if (!success) {
 					alert('Could not reload i3/sway. Make sure either i3 or sway is installed and the commands are in your PATH.');
 				} else {
-					// Optional: show a brief success message (you could use a status element)
 					console.log('Reload triggered successfully.');
 				}
 			} catch (error) {

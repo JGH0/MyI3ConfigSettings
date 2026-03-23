@@ -1,1 +1,26 @@
-<h1>workspaces</h1>
+<h2>Workspaces</h2>
+<p>Configure workspace names and assign applications to specific workspaces.</p>
+
+<!-- Workspace names -->
+<h3>Workspace Names</h3>
+<table style="width:100%; border-collapse: collapse; margin-bottom: 2rem;">
+    <thead align="left">
+        <tr><th>Workspace</th><th>Name</th></tr>
+    </thead>
+    <tbody id="workspace-names-body">
+        <!-- Dynamically filled -->
+    </tbody>
+</table>
+
+<!-- Application assignments -->
+<h3>Application Assignments</h3>
+<p>Assign applications to automatically open on a specific workspace.</p>
+<div id="assignments-list">
+    <!-- Each assignment row will be added here -->
+</div>
+<button id="add-assignment">➕ Add Assignment</button>
+
+<div style="margin-top: 2rem;">
+    <button id="save-btn">💾 Save Workspace Settings</button>
+    <div id="status" class="status"></div>
+</div>
