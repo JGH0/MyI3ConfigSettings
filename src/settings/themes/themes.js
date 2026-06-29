@@ -433,6 +433,21 @@ function showStatus(msg, type) {
 export async function init(containerElement) {
     container = containerElement;
     statusDiv = document.getElementById('status');
+
+    // On macOS, show notice that theming isn't supported by AeroSpace
+    if (navigator.platform.startsWith('Mac')) {
+        container.innerHTML = `
+            <h2>Themes</h2>
+            <div style="padding: 2rem; background: #fff3cd; border-radius: 8px; margin: 1rem 0; border: 1px solid #ffc107;">
+                <h3 style="margin-top: 0;">🎨 Not available on macOS</h3>
+                <p>AeroSpace (macOS) does not support window borders, colors, or font theming.</p>
+                <p>Theme settings here only apply to i3 (X11) and Sway (Wayland).</p>
+                <p>Gaps can be configured directly in <code>~/.aerospace.toml</code> under the <code>[gaps]</code> section.</p>
+            </div>
+        `;
+        return;
+    }
+
     wallpaperWarning = document.getElementById('wallpaper-warning');
 
     // Get element references

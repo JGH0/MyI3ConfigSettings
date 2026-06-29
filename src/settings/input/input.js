@@ -512,6 +512,21 @@ export async function init(containerElement) {
 	container = containerElement;
 	statusDiv = document.getElementById('status');
 
+	// On macOS, show notice that input config isn't managed by AeroSpace
+	if (navigator.platform.startsWith('Mac')) {
+		container.innerHTML = `
+			<h2>Input</h2>
+			<div style="padding: 2rem; background: #fff3cd; border-radius: 8px; margin: 1rem 0; border: 1px solid #ffc107;">
+				<h3 style="margin-top: 0;">⌨️ Not available on macOS</h3>
+				<p>Keyboard repeat rate, mouse/trackpad settings, and layout management are handled by macOS System Settings.</p>
+				<p>AeroSpace only supports <code>[key-mapping]</code> preset (qwerty / dvorak / colemak) in <code>~/.aerospace.toml</code>.</p>
+				<p>Configure keyboard: <strong>System Settings → Keyboard</strong></p>
+				<p>Configure trackpad: <strong>System Settings → Trackpad</strong></p>
+			</div>
+		`;
+		return;
+	}
+
 	repeatRateInput = document.getElementById('repeat-rate');
 	repeatDelayInput = document.getElementById('repeat-delay');
 	accelProfileSelect = document.getElementById('accel-profile');

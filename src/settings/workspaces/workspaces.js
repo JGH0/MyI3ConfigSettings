@@ -1,9 +1,11 @@
-import { generateKeybindingsConf } from '../../configManager.js'; // only if needed
+import { generateKeybindingsConf } from '../../configManager.js';
 
 const { fs } = window.__TAURI__;
 const { readTextFile, writeTextFile, BaseDirectory } = fs;
 const { invoke } = window.__TAURI__.core;
 const { path } = window.__TAURI__;
+
+const IS_MAC = navigator.platform.startsWith('Mac');
 
 // ---------- Configuration ----------
 const CONFIG_DIR = '.config/MyI3Config/';
@@ -124,35 +126,88 @@ function renderAssignments() {
 
 // ---------- Save settings ----------
 async function saveSettings() {
-    // Gather current data from UI (already in currentSettings via listeners, but ensure sync)
-    // Workspace names are already updated via change events; assignments already updated.
     try {
         await writeTextFile(WORKSPACES_JSON, JSON.stringify(currentSettings, null, 2), { baseDir: HOME });
 
-        // Generate workspaces.conf
-        const confLines = [];
-
-        // Workspace names
-        for (let i = 1; i <= 10; i++) {
-            const name = currentSettings.names[i];
-            if (name && name !== i.toString()) {
-                confLines.push(`workspace ${i} name "${name}"`);
+        if (IS_MAC) {
+            // On macOS: update persistent-workspaces in ~/.aerospace.toml
+            // Read existing, update persistent-workspaces, write back
+            const AEROSPACE_CONFIG = '.aerospace.toml';
+            let aeroContent = '';
+            try {
+                aeroContent = await readTextFile(AEROSPACE_CONFIG, { baseDir: HOME });
+            } catch (err) {
+                if (!err.toString().includes('No such file or directory')) throw err;
+                aeroContent = '';
             }
+
+            const lines = aeroContent.split('\n');
+            const result = [];
+            let inPersistent = false;
+            let persistentReplaced = false;
+            let workspaceNamesLine = '';
+
+            // Collect custom workspace names
+            const customWorkspaceBindings = [];
+            for (let i = 1; i <= 10; i++) {
+                const name = currentSettings.names[i];
+                if (name && name !== i.toString()) {
+                    customWorkspaceBindings.push(`  cmd-${i === 10 ? 0 : i} = 'workspace ${name}'`);
+                }
+            }
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+
+                // Replace persistent-workspaces list
+                if (line.trim().startsWith('persistent-workspaces =')) {
+                    const wsNames = [];
+                    for (let j = 1; j <= 10; j++) {
+                        const name = currentSettings.names[j];
+                        const wsName = name && name !== j.toString() ? `"${name}"` : `"${j}"`;
+                        wsNames.push(wsName);
+                    }
+                    result.push(`persistent-workspaces = [${wsNames.join(', ')}]`);
+                    persistentReplaced = true;
+                    continue;
+                }
+
+                result.push(line);
+            }
+
+            if (!persistentReplaced) {
+                const wsNames = [];
+                for (let j = 1; j <= 10; j++) {
+                    const name = currentSettings.names[j];
+                    const wsName = name && name !== j.toString() ? `"${name}"` : `"${j}"`;
+                    wsNames.push(wsName);
+                }
+                result.push(`persistent-workspaces = [${wsNames.join(', ')}]`);
+            }
+
+            await writeTextFile(AEROSPACE_CONFIG, result.join('\n'), { baseDir: HOME });
+            showStatus('Workspace settings saved to ~/.aerospace.toml', 'success');
+        } else {
+            // Linux: generate workspaces.conf
+            const confLines = [];
+
+            for (let i = 1; i <= 10; i++) {
+                const name = currentSettings.names[i];
+                if (name && name !== i.toString()) {
+                    confLines.push(`workspace ${i} name "${name}"`);
+                }
+            }
+
+            currentSettings.assignments.forEach(assign => {
+                if (assign.appClass && assign.workspace) {
+                    confLines.push(`assign [class="${assign.appClass}"] workspace ${assign.workspace}`);
+                }
+            });
+
+            await writeTextFile(WORKSPACES_CONF, confLines.join('\n'), { baseDir: HOME });
+            await ensureIncludeLine();
+            showStatus('Workspace settings saved. Reload i3/sway with $mod+Shift+c', 'success');
         }
-
-        // Assignments
-        currentSettings.assignments.forEach(assign => {
-            if (assign.appClass && assign.workspace) {
-                confLines.push(`assign [class="${assign.appClass}"] workspace ${assign.workspace}`);
-            }
-        });
-
-        await writeTextFile(WORKSPACES_CONF, confLines.join('\n'), { baseDir: HOME });
-
-        // Ensure include line in main config
-        await ensureIncludeLine();
-
-        showStatus('Workspace settings saved. Reload i3/sway with $mod+Shift+c', 'success');
     } catch (error) {
         showStatus('Error saving: ' + error, 'error');
     }

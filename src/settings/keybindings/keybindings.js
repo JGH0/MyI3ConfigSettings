@@ -1,5 +1,5 @@
 // settings/keybindings/keybindings.js
-import { readKeybindings, writeKeybindings, generateConfLines, writeConfFile, ensureIncludeLine } from '../../configManager.js';
+import { readKeybindings, writeKeybindings, generateConfLines, writeConfFile, ensureIncludeLine, writeAerospaceKeybindings } from '../../configManager.js';
 
 const { fs } = window.__TAURI__;
 const { readTextFile, writeTextFile, BaseDirectory } = fs;
@@ -152,24 +152,31 @@ function applyFilterAndSort() {
 async function writeBindingsToDisk() {
 	try {
 		await writeKeybindings(bindings);
-		const confLines = bindings.map(b => {
-			if (b.type === 'app') {
-				return `bindsym ${b.keyCombo} exec ${b.command}`;
-			} else if (b.type === 'window') {
-				return `bindsym ${b.keyCombo} ${b.action}`;
-			} else if (b.type === 'workspace') {
-				return `bindsym ${b.keyCombo} workspace ${b.workspaceNum === 0 ? 10 : b.workspaceNum}`;
-			} else if (b.type === 'move-to-workspace') {
-				return `bindsym ${b.keyCombo} move container to workspace ${b.workspaceNum === 0 ? 10 : b.workspaceNum}`;
-			} else if (b.type === 'resize') {
-				return `bindsym ${b.keyCombo} resize ${b.resizeDir} ${b.resizeAmount} ${b.resizeUnit}`;
-			}
-			return '';
-		}).filter(line => line);
-		await writeConfFile(confLines);
-		await ensureIncludeLine();
 
-		showStatus('Changes saved. Reload i3/sway with $mod+Shift+c', 'success');
+		if (window.IS_MAC) {
+			// macOS: write AeroSpace TOML bindings
+			await writeAerospaceKeybindings(bindings);
+			showStatus('Changes saved to ~/.aerospace.toml. Reload AeroSpace with ⌘⇧r', 'success');
+		} else {
+			// Linux: generate i3/sway bindsym conf
+			const confLines = bindings.map(b => {
+				if (b.type === 'app') {
+					return `bindsym ${b.keyCombo} exec ${b.command}`;
+				} else if (b.type === 'window') {
+					return `bindsym ${b.keyCombo} ${b.action}`;
+				} else if (b.type === 'workspace') {
+					return `bindsym ${b.keyCombo} workspace ${b.workspaceNum === 0 ? 10 : b.workspaceNum}`;
+				} else if (b.type === 'move-to-workspace') {
+					return `bindsym ${b.keyCombo} move container to workspace ${b.workspaceNum === 0 ? 10 : b.workspaceNum}`;
+				} else if (b.type === 'resize') {
+					return `bindsym ${b.keyCombo} resize ${b.resizeDir} ${b.resizeAmount} ${b.resizeUnit}`;
+				}
+				return '';
+			}).filter(line => line);
+			await writeConfFile(confLines);
+			await ensureIncludeLine();
+			showStatus('Changes saved. Reload i3/sway with $mod+Shift+c', 'success');
+		}
 	} catch (error) {
 		showStatus('Error saving: ' + error, 'error');
 	}

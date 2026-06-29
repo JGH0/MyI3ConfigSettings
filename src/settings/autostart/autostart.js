@@ -4,13 +4,18 @@ const { readTextFile, writeTextFile, mkdir, BaseDirectory } = fs;
 const { invoke } = window.__TAURI__.core;
 const { path } = window.__TAURI__;
 
-const SCRIPTS_DIR = '.config/MyI3Config/scripts/';
-const STARTUP_SCRIPT = SCRIPTS_DIR + 'startup.sh';
+const IS_MAC = navigator.platform.startsWith('Mac');
+
+// macOS: use scripts-aerospace/startup.sh instead of scripts/startup.sh
+const SCRIPTS_SUBDIR = IS_MAC ? '.config/MyI3Config/scripts-aerospace/' : '.config/MyI3Config/scripts/';
+const STARTUP_FILE = IS_MAC ? 'startup.sh' : 'startup.sh';
+const STARTUP_SCRIPT = SCRIPTS_SUBDIR + STARTUP_FILE;
 const HOME = BaseDirectory.Home;
 
 let textarea;
 let saveBtn;
 let statusDiv;
+let scriptPathInfo;
 
 async function loadStartupScript() {
 	try {
@@ -20,7 +25,11 @@ async function loadStartupScript() {
 		} catch (err) {
 			if (!err.toString().includes('No such file or directory')) throw err;
 			// Default content if file doesn't exist
-			content = '#!/bin/bash\n# Add your startup commands here\n';
+			if (IS_MAC) {
+				content = '#!/bin/bash\n# macOS startup commands\n# Runs on AeroSpace startup\n\necho "macOS startup running"\n';
+			} else {
+				content = '#!/bin/bash\n# Add your startup commands here\n';
+			}
 		}
 		textarea.value = content;
 	} catch (error) {
@@ -36,7 +45,7 @@ async function saveStartupScript() {
 	}
 	try {
 		// Ensure scripts directory exists
-		await mkdir(SCRIPTS_DIR, { baseDir: HOME, recursive: true });
+		await mkdir(SCRIPTS_SUBDIR, { baseDir: HOME, recursive: true });
 
 		// Write the file
 		await writeTextFile(STARTUP_SCRIPT, content, { baseDir: HOME });
@@ -62,14 +71,19 @@ function showStatus(msg, type) {
 }
 
 export function init(containerElement) {
-	// Get references to the elements (they are now in the DOM)
 	textarea = document.getElementById('startupScript');
 	saveBtn = document.getElementById('saveBtn');
 	statusDiv = document.getElementById('status');
+	scriptPathInfo = document.getElementById('scriptPathInfo');
 
 	if (!textarea || !saveBtn || !statusDiv) {
 		console.error('Required elements not found in autostart.html');
 		return;
+	}
+
+	// Show which file is being edited
+	if (scriptPathInfo) {
+		scriptPathInfo.textContent = `Editing: ~/${STARTUP_SCRIPT}`;
 	}
 
 	saveBtn.addEventListener('click', saveStartupScript);

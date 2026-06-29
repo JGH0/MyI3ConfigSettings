@@ -96,6 +96,26 @@ These files are ignored by git in the MyI3Config repository, so your personal se
 
 ---
 
+## Platform Notes
+
+### Linux (i3 / Sway)
+- All features available: keybindings, themes, input, workspaces, autostart
+- Generates `.conf` snippet files included by the main i3/sway config
+- Reload via `i3-msg reload` or `swaymsg reload`
+
+### macOS (AeroSpace)
+- **Keybindings** ✓ – translates i3-style bindings to AeroSpace TOML in `~/.aerospace.toml`
+  - `$mod` → `cmd`
+  - `bindsym` → TOML `key = 'command'` format
+  - Preserves all other sections of your existing `~/.aerospace.toml`
+- **Workspaces** ✓ – updates `persistent-workspaces` in `~/.aerospace.toml`
+- **Autostart** ✓ – edits `scripts-aerospace/startup.sh`
+- **Themes** ✗ – AeroSpace does not support borders, colors, or font theming. Shows a notice.
+- **Input** ✗ – macOS handles input through System Settings. Shows a notice.
+- Reload via `aerospace reload-config`
+
+---
+
 ## Development
 
 - **Frontend**: vanilla HTML/CSS/JS (no framework)
